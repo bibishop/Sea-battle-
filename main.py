@@ -1,5 +1,5 @@
 def get_shot(guesses):
-    """Prompt the user for a shot and return the shot as a (column, row) tuple."""
+   
     while True:
         try:
             shot = input("Please enter your guess (e.g., B5): ").upper()
