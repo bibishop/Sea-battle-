@@ -41,9 +41,8 @@ def check_shot(boat1,boat2,hit,miss,comp):
             hit.append(shot)    
         else :
             comp.append(shot)
-    else:
-        miss.append(shot)
-    if shot in boat2:
+   
+    elif shot in boat2:
         boat1.remove(shot)
         if len(boat2)>0:
             hit.append(shot)    
