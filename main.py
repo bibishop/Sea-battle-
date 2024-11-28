@@ -33,19 +33,38 @@ def show_board(hit, miss, comp):
             row = row + ch
             place = place + 1
         print(x, "", row)
-def check_shot(boat1,hit,miss,comp):
+def check_shot(boat1,boat2,hit,miss,comp):
     if shot in boat1:
-        hit.append(shot)
-    else :
+        
+        boat1.remove(shot)
+        if len(boat1)>0:
+            hit.append(shot)    
+        else :
+            comp.append(shot)
+    else:
         miss.append(shot)
-    return hit,miss,comp
+    if shot in boat2:
+        boat1.remove(shot)
+        if len(boat2)>0:
+            hit.append(shot)    
+        else :
+            comp.append(shot)
+    else:
+        miss.append(shot)    return hit,miss,comp,boat1,boat2
 boat1=[45,46,47]
+boat2=[6,16,26]
 hit = []  # List of hit positions
 miss = []  # List of missed positions
-comp = []  # List of computer's ship positions (not shown to player)
-guesses = hit + miss + comp  # All positions that have been guessed
-shot=get_shot(guesses)
-hit,miss,comp=check_shot(boat1,hit,miss,comp)
-show_board(hit, miss, comp)
+comp = [] 
+
+for i in range (10):
+    guesses = hit + miss + comp  # All positions that have been guessed
+    shot=get_shot(guesses)
+    boat1,boat2,hit,miss,comp=check_shot(boat2,boat1,hit,miss,comp)
+    show_board(hit, miss, comp)
+    if len(boat1)<1 and len(boat2)<1:
+        print("You have won")
+        break
+print("Congratulation you have finished the game  ")
 
 
