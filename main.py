@@ -1,14 +1,17 @@
 import random
-print("Welocome to Sea battle game from Bolotova K.")
-n=input("What is your name :")
+import os
+
+def clear_screen():
+    os.system('cls' if os.name == 'nt' else 'clear')
+
 def place_ships():
-   
+    
     def is_valid_position(ship, all_ships):
-   
+        
         for segment in ship:
             if segment in all_ships:
                 return False
-
+     
             col, row = segment
             adjacent_positions = [
                 (col + dx, row + dy)
@@ -20,15 +23,15 @@ def place_ships():
         return True
 
     def generate_ship(size):
-        """Generate a valid ship of a given size."""
+        
         while True:
-
+           
             orientation = random.choice(['H', 'V']) 
             if orientation == 'H':  
                 col_start = random.randint(0, 6 - size + 1)
                 row_start = random.randint(0, 6)
                 ship = [(col_start + i, row_start) for i in range(size)]
-            else: 
+            else:  
                 col_start = random.randint(0, 6)
                 row_start = random.randint(0, 6 - size + 1)
                 ship = [(col_start, row_start + i) for i in range(size)]
@@ -44,13 +47,12 @@ def place_ships():
     ships.append(ship1)
     all_ships.extend(ship1)
 
- 
+  
     for _ in range(2):
         ship = generate_ship(2)
         ships.append(ship)
         all_ships.extend(ship)
 
-   
     for _ in range(4):
         ship = generate_ship(1)
         ships.append(ship)
@@ -59,7 +61,8 @@ def place_ships():
     return ships
 
 def show_board(hit, miss, comp):
-   
+
+    clear_screen()  
     print("     Battleship  ")
     print("   0 1 2 3 4 5 6")
     
@@ -71,14 +74,13 @@ def show_board(hit, miss, comp):
                 line += "x "
             elif position in hit:
                 line += "o "
-            elif position in comp:
-                line += "~ "
             else:
-                line += ". "
+                line += "~ "
+            
         print(line)
 
 def get_shot(guesses):
-  
+    
     while True:
         try:
             shot = input("Enter your guess as two numbers (row column, e.g., '2 3'): ")
@@ -98,36 +100,46 @@ def get_shot(guesses):
             print("Invalid input. Please try again.")
 
 def check_shot(shot, ships, hit, miss, comp):
-    """Check the player's shot and update the game state."""
+   
     for ship in ships:
         if shot in ship:
             ship.remove(shot)
             hit.append(shot)
             if len(ship) == 0:
-                comp.extend(ship)
-                print("You sunk a ship!")
+                comp.extend(ship)  
+                print("You sunk a ship!") 
             return hit, miss, comp, ships
     miss.append(shot)
     return hit, miss, comp, ships
 
 
-ships = place_ships()
-hit = []
-miss = []
-comp = []
+players_scores = []
+while True:
+    ships = place_ships()
+    hit = []
+    miss = []
+    comp = []
 
-
-for _ in range(50): 
-    guesses = hit + miss + comp
-    show_board(hit, miss, comp)
-    shot = get_shot(guesses)
-    hit, miss, comp, ships = check_shot(shot, ships, hit, miss, comp)
-
-    if all(len(ship) == 0 for ship in ships):
+   
+    for _ in range(50):
+        guesses = hit + miss + comp
         show_board(hit, miss, comp)
-        print("You have won!")
+        shot = get_shot(guesses)
+        hit, miss, comp, ships = check_shot(shot, ships, hit, miss, comp)
+
+        if all(len(ship) == 0 for ship in ships):
+            show_board(hit, miss, comp)
+            print("You have won!")
+            print(f"Total shots made: {len(hit) + len(miss)}")
+            players_scores.append(len(hit) + len(miss))  
+            break
+
+    play_again = input("Do you want to play again? (y/n): ").lower()
+    if play_again != 'y':
+       
+        print("Leaderboard:")
+        players_scores.sort()
+        for score in players_scores:
+            print(f"{score} shots")
         break
-
-print("Congratulations, you have finished the game!")
-
 
