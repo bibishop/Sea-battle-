@@ -1,84 +1,131 @@
-def get_shot(guesses):
+import random
+
+def place_ships():
+    def is_valid_position(ship, all_ships):
+        """Check if the ship can be placed without touching other ships."""
+        for segment in ship:
+            if segment in all_ships:
+                return False
+      
+            col, row = segment
+            adjacent_positions = [
+                (col + dx, row + dy)
+                for dx in (-1, 0, 1) for dy in (-1, 0, 1)
+                if 0 <= col + dx <= 6 and 0 <= row + dy <= 6
+            ]
+            if any(pos in all_ships for pos in adjacent_positions):
+                return False
+        return True
+
+    def generate_ship(size):
+        
+        while True:
+           
+            orientation = random.choice(['H', 'V']) 
+            if orientation == 'H':  # Horizontal
+                col_start = random.randint(0, 6 - size + 1)
+                row_start = random.randint(0, 6)
+                ship = [(col_start + i, row_start) for i in range(size)]
+            else:  
+                col_start = random.randint(0, 6)
+                row_start = random.randint(0, 6 - size + 1)
+                ship = [(col_start, row_start + i) for i in range(size)]
+
+            if is_valid_position(ship, all_ships):
+                return ship
+
+    all_ships = []
+    ships = []
+
    
-    while True:
-        try:
-            shot = input("Please enter your guess (e.g., B5): ").upper()
-            
-            if len(shot) != 2:
-                print("Invalid input! Please enter a letter followed by a number (e.g., B5).")
-                continue
+    ship1 = generate_ship(3)
+    ships.append(ship1)
+    all_ships.extend(ship1)
 
-            column = shot[0]
-            row = int(shot[1])
+  
+    for _ in range(2):
+        ship = generate_ship(2)
+        ships.append(ship)
+        all_ships.extend(ship)
 
-            if column not in "ABCDEFG" or row not in range(1, 8):
-                print("Invalid column or row. Please enter a valid guess (e.g., B5).")
-                continue
+    for _ in range(4):
+        ship = generate_ship(1)
+        ships.append(ship)
+        all_ships.extend(ship)
 
-            if (column, row) in guesses:
-                print("You've already guessed this spot!")
-                continue
-
-            return column, row  
-        except ValueError:
-            print("Incorrect entry, please enter a letter and a number (e.g., B5).")
+    return ships
 
 def show_board(hit, miss, comp):
-    """Display the board showing hits, misses, and remaining boats."""
+    """Display the board with hit, miss, and sunk markers."""
     print("     Battleship  ")
-    print("   A B C D E F G")  
+    print("   0 1 2 3 4 5 6")
     
-    for row in range(1, 8):
-        row_display = ""
-        for column in "ABCDEFG":
-            ch = "_ "
-            if (column, row) in miss:
-                ch = "x " 
-            elif (column, row) in hit:
-                ch = "o "  
-            elif (column, row) in comp:
-                ch = "O "  
-            row_display += ch
-        print(f"{row}  {row_display}")  
+    for row in range(7):
+        line = f"{row}  "
+        for col in range(7):
+            position = (col, row)
+            if position in miss:
+                line += "x "
+            elif position in hit:
+                line += "o "
+            elif position in comp:
+                line += "~ "
+            else:
+                line += ". "
+        print(line)
 
-def check_shot(shot, boat1, boat2, hit, miss, comp):
-    """Check if the shot hits any boats and update the lists accordingly."""
-    if shot in boat1:
-        boat1.remove(shot)
-        hit.append(shot)
-        if len(boat1) == 0:
-            print("Boat 1 is sunk!")
-            comp.extend(hit)  
-    elif shot in boat2:
-        boat2.remove(shot)
-        hit.append(shot)
-        if len(boat2) == 0:
-            print("Boat 2 is sunk!")
-            comp.extend(hit)
-    else:
-        miss.append(shot)
-    return hit, miss, comp, boat1, boat2
+def get_shot(guesses):
+    
+    while True:
+        try:
+            shot = input("Enter your guess as two numbers (column row, e.g., '2 3'): ")
+            parts = shot.strip().split()
+            if len(parts) != 2:
+                raise ValueError("You must enter two numbers separated by a space.")
+            
+            col, row = int(parts[0]), int(parts[1])
+            
+            if not (0 <= col <= 6 and 0 <= row <= 6):
+                print("Coordinates are out of bounds. Try again.")
+            elif (col, row) in guesses:
+                print("You've already guessed this spot!")
+            else:
+                return (col, row)
+        except ValueError as e:
+            print("Invalid input. Please try again.")
+
+def check_shot(shot, ships, hit, miss, comp):
+    """Check the player's shot and update the game state."""
+    for ship in ships:
+        if shot in ship:
+            ship.remove(shot)
+            if len(ship) == 0:
+                comp.extend(ship)
+                print("You sunk a ship!")
+            else:
+                hit.append(shot)
+            return hit, miss, comp, ships
+    miss.append(shot)
+    return hit, miss, comp, ships
 
 
-boat1 = [("B", 5), ("C", 5), ("D", 5)]  
-boat2 = [("A", 2), ("A", 3), ("A", 4)]  
-
-hit = []  
-miss = [] 
-comp = []  
+ships = place_ships()
+hit = []
+miss = []
+comp = []
 
 
-for i in range(10):
-    guesses = hit + miss + comp  
-    shot = get_shot(guesses)  
-    hit, miss, comp, boat1, boat2 = check_shot(shot, boat1, boat2, hit, miss, comp)  
-    show_board(hit, miss, comp)  
+for _ in range(50): 
+    guesses = hit + miss + comp
+    show_board(hit, miss, comp)
+    shot = get_shot(guesses)
+    hit, miss, comp, ships = check_shot(shot, ships, hit, miss, comp)
 
- 
-    if len(boat1) == 0 and len(boat2) == 0:
+    if all(len(ship) == 0 for ship in ships):
         print("You have won!")
         break
 
 print("Congratulations, you have finished the game!")
+
 
 
