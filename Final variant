@@ -1,6 +1,7 @@
 import random
 import os
 
+
 def clear_screen():
     os.system('cls' if os.name == 'nt' else 'clear')
 
@@ -114,6 +115,7 @@ def check_shot(shot, ships, hit, miss, comp):
 
 players_scores = []
 while True:
+    name=input("PLease enter yout name:")
     ships = place_ships()
     hit = []
     miss = []
